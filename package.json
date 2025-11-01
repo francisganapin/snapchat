@@ -1,0 +1,15 @@
+{
+  "name": "snap-tryon-demo",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@snap/camera-kit": "^1.11.0"
+  }
+}
