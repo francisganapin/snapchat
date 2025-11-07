@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Full Screen Camera Kit</title>
+  <title>Camera Lens Carousel</title>
   <style>
     * {
       margin: 0;
@@ -62,35 +62,127 @@
       max-width: 90%;
     }
 
-    #switchButton {
-  position: fixed;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  padding: 15px 40px;
-  font-size: 18px;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-weight: 600;
-  color: white;
-  background: rgba(0, 0, 0, 0.7);
-  border: 2px solid white;
-  border-radius: 50px;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  touch-action: manipulation;
-  display: block;  /* Changed from 'none' to 'block' */
-}
-
-    #switchButton:active {
-      transform: translateX(-50%) scale(0.95);
-      background: rgba(0, 0, 0, 0.9);
+    /* Carousel Container */
+    #carouselContainer {
+      position: fixed;
+      bottom: 30px;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: none;
     }
 
-    #switchButton:hover {
-      background: rgba(0, 0, 0, 0.85);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    #carouselWrapper {
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 0 20px;
+    }
+
+    #carouselWrapper::-webkit-scrollbar {
+      display: none;
+    }
+
+    #carousel {
+      display: flex;
+      gap: 15px;
+      padding: 10px 0;
+    }
+
+    .lens-item {
+      flex-shrink: 0;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lens-item.active {
+      border-color: white;
+      border-width: 4px;
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .lens-item:active {
+      transform: scale(0.95);
+    }
+
+    /* Indicator Dots */
+    #indicators {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 15px;
+      padding-bottom: 10px;
+    }
+
+    .indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .indicator.active {
+      background: white;
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    /* Navigation Arrows */
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
+      border: 2px solid white;
+      color: white;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 101;
+      transition: all 0.3s ease;
+    }
+
+    .nav-arrow:active {
+      transform: translateY(-50%) scale(0.9);
+    }
+
+    .nav-arrow.left {
+      left: 10px;
+    }
+
+    .nav-arrow.right {
+      right: 10px;
+    }
+
+    .nav-arrow:hover {
+      background: rgba(0, 0, 0, 0.9);
     }
   </style>
 </head>
@@ -98,7 +190,15 @@
   <div id="loading">Initializing camera...</div>
   <div id="error"></div>
   <canvas id="canvas"></canvas>
-  <button id="switchButton">Next</button>
+  
+  <div id="carouselContainer">
+    <div class="nav-arrow left" id="prevArrow">‹</div>
+    <div class="nav-arrow right" id="nextArrow">›</div>
+    <div id="carouselWrapper">
+      <div id="carousel"></div>
+    </div>
+    <div id="indicators"></div>
+  </div>
   
   <script type="module" src="main.js"></script>
 </body>

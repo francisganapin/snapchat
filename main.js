@@ -2,7 +2,12 @@ import { bootstrapCameraKit } from '@snap/camera-kit';
 
 const loading = document.getElementById('loading');
 const errorDiv = document.getElementById('error');
-const switchButton = document.getElementById('switchButton');
+const carouselContainer = document.getElementById('carouselContainer');
+const carousel = document.getElementById('carousel');
+const carouselWrapper = document.getElementById('carouselWrapper');
+const indicators = document.getElementById('indicators');
+const prevArrow = document.getElementById('prevArrow');
+const nextArrow = document.getElementById('nextArrow');
 
 function showError(message) {
   loading.style.display = 'none';
@@ -18,89 +23,169 @@ function showError(message) {
 
     const liveRenderTarget = document.getElementById('canvas');
 
-    // Make canvas full screen with proper resolution
     function resizeCanvas() {
       const dpr = window.devicePixelRatio || 1;
       liveRenderTarget.width = window.innerWidth * dpr;
       liveRenderTarget.height = window.innerHeight * dpr;
     }
 
-    // Initial resize
     resizeCanvas();
-
-    // Resize on window change and orientation change
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('orientationchange', () => {
       setTimeout(resizeCanvas, 100);
     });
 
-    // Create Camera Kit session
     const session = await cameraKit.createSession({ liveRenderTarget });
 
-    // Mobile-friendly camera constraints
     const constraints = {
       video: {
-        facingMode: 'user', // Use front camera by default
+        facingMode: 'user',
         width: { ideal: 1280 },
         height: { ideal: 720 }
       }
     };
 
-    // Get webcam stream with error handling
     let mediaStream;
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
     } catch (err) {
-      // Fallback to basic constraints if ideal ones fail
       mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
     }
 
     await session.setSource(mediaStream);
     await session.play();
 
-    // Array of all lenses in the same group
-    const lensIds = [
-
-      /////////////////////////////////////
-      '41e6b7e5-07d6-4884-a2dc-918125900634',
-      'ec0e0545-4e45-401a-9428-16c702186bff',
-      /////////////////////////////////////
-
-      'ab4c72ff-f48c-49c4-911f-4db8aed071d5',
-      'dc27ba72-bd5a-4c6a-a845-ac00e6fcbac3',
-      '0fc1854c-4364-46f7-bb0d-0d250224ce02',
-      '935805bc-ae90-4787-a1c0-1418981b8fa1'
+    // Array of lens objects with ID and thumbnail image
+    const lenses = [
+      {
+        id: '41e6b7e5-07d6-4884-a2dc-918125900634',
+        thumbnail: 'picture/cute.png' // Replace with your image path
+      },
+      {
+        id: 'ec0e0545-4e45-401a-9428-16c702186bff',
+        thumbnail: 'picture/halfcute.png'
+      },
+      {
+        id: 'd5b91469-fc3d-461e-a881-bcb4239ce82a',
+        thumbnail: 'picture/mangada.png'
+      },
+      {
+        id: '398b9c9e-9deb-4816-b1c5-73ca12110137',
+        thumbnail: 'picture/blue.png'
+      },
+      {
+        id: '67eb92ed-7ea6-4404-9917-c5456dfefe21',
+        thumbnail: 'picture/blue with hat.png'
+      },
     ];
     const groupId = '731d446c-7719-4ac6-a665-659a1de089aa';
 
     let currentLensIndex = 0;
 
-    // Function to load and apply a lens by index
+    // Create carousel items with images
+    lenses.forEach((lens, index) => {
+      const item = document.createElement('div');
+      item.className = 'lens-item';
+      item.dataset.index = index;
+      
+      // Create image element
+      const img = document.createElement('img');
+      img.src = lens.thumbnail;
+      img.alt = `Filter ${index + 1}`;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '50%';
+      
+      item.appendChild(img);
+      carousel.appendChild(item);
+
+      // Create indicator
+      const indicator = document.createElement('div');
+      indicator.className = 'indicator';
+      indicators.appendChild(indicator);
+    });
+
+    // Function to update active states
+    function updateActiveStates(index) {
+      document.querySelectorAll('.lens-item').forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+      });
+      document.querySelectorAll('.indicator').forEach((ind, i) => {
+        ind.classList.toggle('active', i === index);
+      });
+    }
+
+    // Function to scroll to item
+    function scrollToItem(index) {
+      const item = carousel.children[index];
+      const itemLeft = item.offsetLeft;
+      const itemWidth = item.offsetWidth;
+      const wrapperWidth = carouselWrapper.offsetWidth;
+      const scrollLeft = itemLeft - (wrapperWidth / 2) + (itemWidth / 2);
+      carouselWrapper.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
+
     async function applyLensByIndex(index) {
       const lens = await cameraKit.lensRepository.loadLens(
-        lensIds[index],
+        lenses[index].id,
         groupId
       );
       await session.applyLens(lens);
-      console.log(`Applied lens ${index + 1} of ${lensIds.length}`);
+      currentLensIndex = index;
+      updateActiveStates(index);
+      scrollToItem(index);
+      console.log(`Applied lens ${index + 1} of ${lenses.length}`);
     }
 
     // Apply first lens
-    await applyLensByIndex(currentLensIndex);
-    
-    // Hide loading message
+    await applyLensByIndex(0);
     loading.style.display = 'none';
+    carouselContainer.style.display = 'block';
 
-    // Button click to switch lens
-    switchButton.addEventListener('click', async () => {
-      switchButton.disabled = true;
-      switchButton.textContent = 'Loading...';
+    // Click handler for carousel items
+    carousel.addEventListener('click', async (e) => {
+      const item = e.target.closest('.lens-item');
+      if (item) {
+        const index = parseInt(item.dataset.index);
+        await applyLensByIndex(index);
+      }
+    });
+
+    // Arrow navigation
+    prevArrow.addEventListener('click', async () => {
+      const newIndex = (currentLensIndex - 1 + lenses.length) % lenses.length;
+      await applyLensByIndex(newIndex);
+    });
+
+    nextArrow.addEventListener('click', async () => {
+      const newIndex = (currentLensIndex + 1) % lenses.length;
+      await applyLensByIndex(newIndex);
+    });
+
+    // Swipe gesture support
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    canvas.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+
+    canvas.addEventListener('touchend', async (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
       
-      currentLensIndex = (currentLensIndex + 1) % lensIds.length;
-      await applyLensByIndex(currentLensIndex);
-      
-      switchButton.disabled = false;
-      switchButton.textContent = 'Switch Lens';
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          // Swipe left - next lens
+          const newIndex = (currentLensIndex + 1) % lensIds.length;
+          await applyLensByIndex(newIndex);
+        } else {
+          // Swipe right - previous lens
+          const newIndex = (currentLensIndex - 1 + lensIds.length) % lensIds.length;
+          await applyLensByIndex(newIndex);
+        }
+      }
     });
 
   } catch (error) {
