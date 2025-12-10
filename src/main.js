@@ -74,8 +74,8 @@ function showError(message) {
         thumbnail: '/picture/blue.png'
       },
       {
-        id: '67eb92ed-7ea6-4404-9917-c5456dfefe21',
-        thumbnail: '/picture/blue with hat.png'
+        id: '067640ae-9e9b-41c4-a013-8d3577f3e919',
+        thumbnail: '/picture/damit_basic.png'
       },
     ];
     const groupId = '731d446c-7719-4ac6-a665-659a1de089aa';
