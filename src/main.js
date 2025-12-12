@@ -77,6 +77,10 @@ function showError(message) {
         id: '067640ae-9e9b-41c4-a013-8d3577f3e919',
         thumbnail: '/picture/damit_basic.png'
       },
+      {
+        id: '4e7d48fd-0b07-4721-978f-e08b561754cf',
+        thumbnail: '/picture/tshirt.png'
+      },
     ];
     const groupId = '731d446c-7719-4ac6-a665-659a1de089aa';
 
